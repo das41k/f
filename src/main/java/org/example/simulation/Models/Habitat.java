@@ -58,7 +58,6 @@ public class Habitat {
         carCount++;
         System.out.println("Автомобиль добавлен с ID: " + id);
     }
-
     /**
      * Генерирует уникальный идентификатор.
      *

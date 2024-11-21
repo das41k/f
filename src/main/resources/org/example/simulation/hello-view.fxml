@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.HBox?>
@@ -52,6 +53,13 @@
             </Label>
             <Spinner fx:id="pMotorcycle" prefHeight="25.0" prefWidth="96.0" />
             <Spinner fx:id="pCar" prefHeight="25.0" prefWidth="97.0" />
+         </children>
+      </HBox>
+      <Label fx:id="timeLabel" text="Label" visible="false" />
+      <HBox prefHeight="100.0" prefWidth="200.0" spacing="60.0">
+         <children>
+            <Button fx:id="btnStart" mnemonicParsing="false" text="Старт" onAction="#startSimulation"/>
+            <Button fx:id="btnEnd" mnemonicParsing="false" text="Стоп" onAction="#stopSimulation"/>
          </children>
       </HBox>
    </children>
