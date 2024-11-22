@@ -58,8 +58,14 @@
       <Label fx:id="timeLabel" text="Label" visible="false" />
       <HBox prefHeight="100.0" prefWidth="200.0" spacing="60.0">
          <children>
-            <Button fx:id="btnStart" mnemonicParsing="false" text="Старт" onAction="#startSimulation"/>
-            <Button fx:id="btnEnd" mnemonicParsing="false" text="Стоп" onAction="#stopSimulation"/>
+            <Button fx:id="btnStart" mnemonicParsing="false" onAction="#startSimulation" text="Старт" />
+            <Button fx:id="btnEnd" mnemonicParsing="false" onAction="#stopSimulation" text="Стоп" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0" spacing="40.0">
+         <children>
+            <Button fx:id="btnTimeClose" onAction="#toggleSimulationTimeDisplay" mnemonicParsing="false" text="Скрыть время симуляции" disable="true" />
+            <Button fx:id="btnTimeWatch" onAction="#toggleSimulationTimeDisplay" mnemonicParsing="false" text="Показать время симуляции" />
          </children>
       </HBox>
    </children>

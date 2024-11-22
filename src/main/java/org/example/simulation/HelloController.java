@@ -10,7 +10,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.util.Duration;
 import org.example.simulation.Models.Habitat;
 
-import java.util.Date; // Используем java.util.Date для времени
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HelloController {
     @FXML
@@ -27,6 +27,14 @@ public class HelloController {
     private Button btnStart;
     @FXML
     private Button btnEnd;
+    @FXML
+    private Button btnTimeClose;
+    @FXML
+    private Button btnTimeWatch;
+
+    private final Alert alertResults = new Alert(Alert.AlertType.INFORMATION);
+    private final ButtonType buttonCancel = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
+
     private Habitat habitat; // Среда обитания
     private boolean isSimulationRunning = false; // Флаг для запуска/остановки симуляции
     private AnimationTimer timer; // Таймер для управления симуляцией
@@ -40,8 +48,12 @@ public class HelloController {
         freqCar.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 60, 10));      // Диапазон: 1-60, по умолчанию 10
         pMotorcycle.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 1.0, 0.5, 0.1)); // Диапазон: 0.1-1.0, шаг 0.1
         pCar.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 1.0, 0.8, 0.1));       // Диапазон: 0.1-1.0, шаг 0.1
+
         // Инициализация среды обитания
         habitat = new Habitat(800, 600);
+
+        // Убедимся, что кнопка "Отмена" добавлена только один раз
+        alertResults.getButtonTypes().add(buttonCancel);
     }
 
     @FXML
@@ -61,6 +73,7 @@ public class HelloController {
         }
         btnStart.setDisable(true);
         btnEnd.setDisable(false);
+
         // Получаем значения из Spinner
         int motorcycleFreq = freqMotorcycle.getValue();
         double motorcycleProb = pMotorcycle.getValue();
@@ -68,7 +81,7 @@ public class HelloController {
         double carProb = pCar.getValue();
 
         // Инициализируем время начала симуляции
-        simulationStartTime = System.currentTimeMillis(); // Используем System.currentTimeMillis()
+        simulationStartTime = System.currentTimeMillis();
         isSimulationRunning = true;
 
         // Настроим таймер для генерации объектов
@@ -78,7 +91,6 @@ public class HelloController {
 
             @Override
             public void handle(long now) {
-                // Проверяем интервал для мотоциклов
                 if (now - lastUpdateMotorcycle >= motorcycleFreq * 1_000_000_000L) {
                     if (Math.random() <= motorcycleProb) {
                         habitat.addMotorcycle();
@@ -86,7 +98,6 @@ public class HelloController {
                     lastUpdateMotorcycle = now;
                 }
 
-                // Проверяем интервал для автомобилей
                 if (now - lastUpdateCar >= carFreq * 1_000_000_000L) {
                     if (Math.random() <= carProb) {
                         habitat.addCar();
@@ -97,7 +108,7 @@ public class HelloController {
         };
 
         timer.start();
-        startSimulationTimer(); // Запуск таймера для отображения времени
+        startSimulationTimer();
         System.out.println("Симуляция запущена");
     }
 
@@ -107,54 +118,74 @@ public class HelloController {
             System.out.println("Симуляция не запущена");
             return;
         }
-        btnStart.setDisable(false);
-        btnEnd.setDisable(true);
-        timer.stop();
+        simulationTimer.pause();
         isSimulationRunning = false;
-        simulationTimer.stop(); // Останавливаем таймер отображения времени
-        System.out.println("Симуляция остановлена");
-
-        // Выводим статистику
+        // Показываем окно результатов
         diplayResualts();
-        habitat.clear();
-    }
-
-    private void displaySimulationTime() {
-        if (!isSimulationRunning) {
-            timeLabel.setText("Симуляция не запущена"); // Сообщение в интерфейсе
+        // Если пользователь нажал "Отмена", не завершаем симуляцию
+        if (alertResults.getResult() == buttonCancel) {
+            isSimulationRunning = true;
+            timer.start();
+            simulationTimer.play();
             return;
         }
 
-        long currentTime = System.currentTimeMillis(); // Текущее время
-        long elapsedTime = currentTime - simulationStartTime; // Разница между текущим временем и временем старта симуляции
+        // Остановка симуляции
+        simulationTimer.stop();
+        btnStart.setDisable(false);
+        btnEnd.setDisable(true);
+        btnTimeWatch.setDisable(false);
+        btnTimeClose.setDisable(true);
+        // Очищаем среду обитания
+        habitat.clear();
+    }
 
-        long hours = (elapsedTime / 1000) / 3600; // Переводим в часы
-        long minutes = (elapsedTime / 1000) % 3600 / 60; // Переводим в минуты
-        long seconds = (elapsedTime / 1000) % 60; // Переводим в секунды
+    @FXML
+    private void displaySimulationTime() {
+        if (!isSimulationRunning) {
+            timeLabel.setText("Симуляция не запущена");
+            return;
+        }
+
+        long currentTime = System.currentTimeMillis();
+        long elapsedTime = currentTime - simulationStartTime;
+
+        long hours = (elapsedTime / 1000) / 3600;
+        long minutes = (elapsedTime / 1000) % 3600 / 60;
+        long seconds = (elapsedTime / 1000) % 60;
 
         String timeText = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-        timeLabel.setText("Время симуляции: " + timeText); // Обновляем текст в Label
+        timeLabel.setText("Время симуляции: " + timeText);
     }
+
     private void diplayResualts() {
         String statistic = habitat.getStatistics();
         String timeSimulation = timeLabel.getText();
-        Alert alertResults = new Alert(Alert.AlertType.INFORMATION);
+
         alertResults.setHeaderText("Результаты симуляции");
         alertResults.setContentText(statistic + '\n' + timeSimulation);
+
         alertResults.showAndWait();
     }
+
+    @FXML
     private void startSimulationTimer() {
         simulationTimer = new Timeline(new KeyFrame(Duration.seconds(1), event -> displaySimulationTime()));
-        simulationTimer.setCycleCount(Animation.INDEFINITE); // Бесконечный цикл
-        simulationTimer.play(); // Запускаем таймер
+        simulationTimer.setCycleCount(Animation.INDEFINITE);
+        simulationTimer.play();
     }
 
+    @FXML
     private void toggleSimulationTimeDisplay() {
         if (timeLabel.isVisible()) {
             timeLabel.setVisible(false);
+            btnTimeWatch.setDisable(false);
+            btnTimeClose.setDisable(true);
         } else {
             timeLabel.setVisible(true);
             displaySimulationTime();
+            btnTimeWatch.setDisable(true);
+            btnTimeClose.setDisable(false);
         }
     }
 }
