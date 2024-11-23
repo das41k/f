@@ -1,6 +1,5 @@
 package org.example.simulation;
 
-import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -10,8 +9,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.util.Duration;
 import org.example.simulation.Models.Habitat;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class HelloController {
     @FXML
     private Spinner<Integer> freqMotorcycle; // Частота для мотоциклов
@@ -20,7 +17,7 @@ public class HelloController {
     @FXML
     private Spinner<Double> pMotorcycle;    // Вероятность для мотоциклов
     @FXML
-    private Spinner<Double> pCar;           // Вероятность для автомобилей
+    private Spinner<Double> pCar;          // Вероятность для автомобилей
     @FXML
     private Label timeLabel;
     @FXML
@@ -38,7 +35,7 @@ public class HelloController {
     private Habitat habitat; // Среда обитания
     private boolean isSimulationRunning = false; // Флаг для запуска/остановки симуляции
     private AnimationTimer timer; // Таймер для управления симуляцией
-    private long simulationStartTime; // Используем System.currentTimeMillis() для времени старта
+    private long elapsedTime = 0; // Общее накопленное время симуляции в секундах
     private Timeline simulationTimer; // Таймер для обновления времени
 
     @FXML
@@ -71,6 +68,7 @@ public class HelloController {
             System.out.println("Симуляция уже запущена");
             return;
         }
+
         btnStart.setDisable(true);
         btnEnd.setDisable(false);
 
@@ -80,11 +78,7 @@ public class HelloController {
         int carFreq = freqCar.getValue();
         double carProb = pCar.getValue();
 
-        // Инициализируем время начала симуляции
-        simulationStartTime = System.currentTimeMillis();
-        isSimulationRunning = true;
-
-        // Настроим таймер для генерации объектов
+        // Настраиваем таймер для генерации объектов
         timer = new AnimationTimer() {
             private long lastUpdateMotorcycle = 0;
             private long lastUpdateCar = 0;
@@ -109,6 +103,7 @@ public class HelloController {
 
         timer.start();
         startSimulationTimer();
+        isSimulationRunning = true;
         System.out.println("Симуляция запущена");
     }
 
@@ -118,11 +113,14 @@ public class HelloController {
             System.out.println("Симуляция не запущена");
             return;
         }
+
+        timer.stop();
         simulationTimer.pause();
-        isSimulationRunning = false;
+
+        // Сохраняем накопленное время перед открытием диалога
         // Показываем окно результатов
         diplayResualts();
-        // Если пользователь нажал "Отмена", не завершаем симуляцию
+        // Если пользователь нажал "Отмена"
         if (alertResults.getResult() == buttonCancel) {
             isSimulationRunning = true;
             timer.start();
@@ -130,13 +128,14 @@ public class HelloController {
             return;
         }
 
-        // Остановка симуляции
+        // Завершаем симуляцию
+        elapsedTime = 0;
+        isSimulationRunning = false;
         simulationTimer.stop();
         btnStart.setDisable(false);
         btnEnd.setDisable(true);
         btnTimeWatch.setDisable(false);
         btnTimeClose.setDisable(true);
-        // Очищаем среду обитания
         habitat.clear();
     }
 
@@ -146,14 +145,9 @@ public class HelloController {
             timeLabel.setText("Симуляция не запущена");
             return;
         }
-
-        long currentTime = System.currentTimeMillis();
-        long elapsedTime = currentTime - simulationStartTime;
-
-        long hours = (elapsedTime / 1000) / 3600;
-        long minutes = (elapsedTime / 1000) % 3600 / 60;
-        long seconds = (elapsedTime / 1000) % 60;
-
+        long hours = (elapsedTime / 3600);
+        long minutes = (elapsedTime % 3600) / 60;
+        long seconds = (elapsedTime % 60);
         String timeText = String.format("%02d:%02d:%02d", hours, minutes, seconds);
         timeLabel.setText("Время симуляции: " + timeText);
     }
@@ -170,8 +164,11 @@ public class HelloController {
 
     @FXML
     private void startSimulationTimer() {
-        simulationTimer = new Timeline(new KeyFrame(Duration.seconds(1), event -> displaySimulationTime()));
-        simulationTimer.setCycleCount(Animation.INDEFINITE);
+        simulationTimer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            elapsedTime++; // Увеличиваем время симуляции
+            displaySimulationTime();
+        }));
+        simulationTimer.setCycleCount(Timeline.INDEFINITE);
         simulationTimer.play();
     }
 
