@@ -55,6 +55,13 @@
             <Spinner fx:id="pCar" prefHeight="25.0" prefWidth="97.0" />
          </children>
       </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0" spacing="60.0">
+         <children>
+            <Label prefHeight="17.0" prefWidth="122.0" text="Время жизни" />
+            <Spinner fx:id="liveMoto" prefHeight="25.0" prefWidth="130.0" />
+            <Spinner fx:id="liveAvto" />
+         </children>
+      </HBox>
       <Label fx:id="timeLabel" text="Label" visible="false" />
       <HBox prefHeight="100.0" prefWidth="200.0" spacing="60.0">
          <children>
@@ -64,8 +71,8 @@
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0" spacing="40.0">
          <children>
-            <Button fx:id="btnTimeClose" onAction="#toggleSimulationTimeDisplay" mnemonicParsing="false" text="Скрыть время симуляции" disable="true" />
-            <Button fx:id="btnTimeWatch" onAction="#toggleSimulationTimeDisplay" mnemonicParsing="false" text="Показать время симуляции" />
+            <Button fx:id="btnTimeClose" disable="true" mnemonicParsing="false" onAction="#toggleSimulationTimeDisplay" text="Скрыть время симуляции" />
+            <Button fx:id="btnTimeWatch" mnemonicParsing="false" onAction="#toggleSimulationTimeDisplay" text="Показать время симуляции" />
          </children>
       </HBox>
    </children>

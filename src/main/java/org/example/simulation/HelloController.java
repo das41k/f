@@ -28,6 +28,10 @@ public class HelloController {
     private Button btnTimeClose;
     @FXML
     private Button btnTimeWatch;
+    @FXML
+    private Spinner<Integer> liveMoto;
+    @FXML
+    private Spinner<Integer> liveAvto;
 
     private final Alert alertResults = new Alert(Alert.AlertType.INFORMATION);
     private final ButtonType buttonCancel = new ButtonType("Отмена", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -45,10 +49,10 @@ public class HelloController {
         freqCar.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 60, 10));      // Диапазон: 1-60, по умолчанию 10
         pMotorcycle.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 1.0, 0.5, 0.1)); // Диапазон: 0.1-1.0, шаг 0.1
         pCar.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0.1, 1.0, 0.8, 0.1));       // Диапазон: 0.1-1.0, шаг 0.1
-
+        liveMoto.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 300, 6));          // Время жизни мотоциклов (секунды)
+        liveAvto.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 300, 8));         // Время жизни автомобилей (секунды)
         // Инициализация среды обитания
         habitat = new Habitat(800, 600);
-
         // Убедимся, что кнопка "Отмена" добавлена только один раз
         alertResults.getButtonTypes().add(buttonCancel);
     }
@@ -77,7 +81,6 @@ public class HelloController {
         double motorcycleProb = pMotorcycle.getValue();
         int carFreq = freqCar.getValue();
         double carProb = pCar.getValue();
-
         // Настраиваем таймер для генерации объектов
         timer = new AnimationTimer() {
             private long lastUpdateMotorcycle = 0;
@@ -165,7 +168,8 @@ public class HelloController {
     @FXML
     private void startSimulationTimer() {
         simulationTimer = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            elapsedTime++; // Увеличиваем время симуляции
+            elapsedTime++;// Увеличиваем время симуляции
+            habitat.clearExpiredObjects(liveMoto.getValue(), liveAvto.getValue());
             displaySimulationTime();
         }));
         simulationTimer.setCycleCount(Timeline.INDEFINITE);

@@ -1,10 +1,8 @@
 package org.example.simulation.Models;
 
+import java.time.Duration;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.UUID;
+import java.util.*;
 
 public class Habitat {
     // Размеры рабочей области (можно использовать для визуализации)
@@ -109,7 +107,11 @@ public class Habitat {
         carCount = 0;
         System.out.println("Все данные симуляции очищены.");
     }
+    public void clearBirthTime() {
+        for (String key : birthTimeMap.keySet()) {
 
+        }
+    }
     /**
      * Возвращает статистическую информацию о симуляции.
      *
@@ -133,8 +135,35 @@ public class Habitat {
      */
     public void displayObjects() {
         System.out.println("Текущее количество объектов: " + objects.size());
-        for (Transport transport : objects) {
-            transport.display();
+    }
+    public void clearExpiredObjects(int maxLifetimeMoto, int maxLifetimeCar) {
+        Iterator<String> iterator = birthTimeMap.keySet().iterator();
+        LocalTime now = LocalTime.now();
+
+        while (iterator.hasNext()) {
+            String id = iterator.next();
+            LocalTime birthTime = birthTimeMap.get(id);
+            long lifetime = Duration.between(birthTime, now).getSeconds();
+
+            // Определяем, к какому типу относится объект
+            Transport transport = objects.stream()
+                    .filter(obj -> obj.getId().equals(id))
+                    .findFirst()
+                    .orElse(null);
+
+            if (transport instanceof Motorcycle && lifetime > maxLifetimeMoto) {
+                iterator.remove();
+                uniqueIds.remove(id);
+                objects.remove(transport);
+                motorcycleCount--;
+                System.out.println("Удалён мотоцикл с ID: " + id);
+            } else if (transport instanceof Car && lifetime > maxLifetimeCar) {
+                iterator.remove();
+                uniqueIds.remove(id);
+                objects.remove(transport);
+                carCount--;
+                System.out.println("Удалён автомобиль с ID: " + id);
+            }
         }
     }
 }
